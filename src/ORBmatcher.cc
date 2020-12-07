@@ -426,7 +426,7 @@ int ORBmatcher::SearchForInitialization(Frame &F1, Frame &F2, vector<cv::Point2f
 	vector<size_t> vIndices2 = F2.GetFeaturesInArea(vbPrevMatched[i1].x,vbPrevMatched[i1].y, windowSize,level1,level1);
 
         if(vIndices2.empty()){
-            cerr << "SeachForInit level empty" << endl;
+            //cerr << "SeachForInit level empty" << endl;
             continue;
 	}
         cv::Mat d1 = F1.mDescriptors.row(i1);
@@ -658,7 +658,9 @@ int ORBmatcher::SearchByBoW(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint *> &
 int ORBmatcher::SearchForTriangulation(KeyFrame *pKF1, KeyFrame *pKF2, cv::Mat F12,
                                        vector<pair<size_t, size_t> > &vMatchedPairs, const bool bOnlyStereo)
 {    
-    const DBoW2::FeatureVector &vFeatVec1 = pKF1->mFeatVec;
+
+//        cerr << "Checkpoint 10" << endl;
+	const DBoW2::FeatureVector &vFeatVec1 = pKF1->mFeatVec;
     const DBoW2::FeatureVector &vFeatVec2 = pKF2->mFeatVec;
 
     //Compute epipole in second image
@@ -678,6 +680,8 @@ int ORBmatcher::SearchForTriangulation(KeyFrame *pKF1, KeyFrame *pKF2, cv::Mat F
     vector<bool> vbMatched2(pKF2->N,false);
     vector<int> vMatches12(pKF1->N,-1);
 
+//        cerr << "Checkpoint 11" << endl;
+
     vector<int> rotHist[HISTO_LENGTH];
     for(int i=0;i<HISTO_LENGTH;i++)
         rotHist[i].reserve(500);
@@ -688,6 +692,8 @@ int ORBmatcher::SearchForTriangulation(KeyFrame *pKF1, KeyFrame *pKF2, cv::Mat F
     DBoW2::FeatureVector::const_iterator f2it = vFeatVec2.begin();
     DBoW2::FeatureVector::const_iterator f1end = vFeatVec1.end();
     DBoW2::FeatureVector::const_iterator f2end = vFeatVec2.end();
+
+//        cerr << "Checkpoint 12" << endl;
 
     while(f1it!=f1end && f2it!=f2end)
     {
@@ -708,20 +714,27 @@ int ORBmatcher::SearchForTriangulation(KeyFrame *pKF1, KeyFrame *pKF2, cv::Mat F
                 if(bOnlyStereo)
                     if(!bStereo1)
                         continue;
-                
+              
+//        cerr << "Checkpoint 14" << endl;
+
                 const cv::KeyPoint &kp1 = pKF1->mvKeysUn[idx1];
-                
                 const cv::Mat &d1 = pKF1->mDescriptors.row(idx1);
-                
+
+//        cerr << "Checkpoint 16" << endl;
+
                 int bestDist = TH_LOW;
                 int bestIdx2 = -1;
                 
                 for(size_t i2=0, iend2=f2it->second.size(); i2<iend2; i2++)
                 {
                     size_t idx2 = f2it->second[i2];
-                    
+                   
+//        cerr << "Checkpoint 17" << endl;
+
                     MapPoint* pMP2 = pKF2->GetMapPoint(idx2);
-                    
+                   
+//        cerr << "Checkpoint 18" << endl;
+
                     // If we have already matched or there is a MapPoint skip
                     if(vbMatched2[idx2] || pMP2)
                         continue;
@@ -739,7 +752,11 @@ int ORBmatcher::SearchForTriangulation(KeyFrame *pKF1, KeyFrame *pKF2, cv::Mat F
                     if(dist>TH_LOW || dist>bestDist)
                         continue;
 
+//        cerr << "Checkpoint 19" << endl;
+
                     const cv::KeyPoint &kp2 = pKF2->mvKeysUn[idx2];
+
+//        cerr << "Checkpoint 20" << endl;
 
                     if(!bStereo1 && !bStereo2)
                     {
@@ -819,6 +836,8 @@ int ORBmatcher::SearchForTriangulation(KeyFrame *pKF1, KeyFrame *pKF2, cv::Mat F
             continue;
         vMatchedPairs.push_back(make_pair(i,vMatches12[i]));
     }
+
+//        cerr << "Checkpoint 13" << endl;
 
     return nmatches;
 }

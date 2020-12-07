@@ -83,9 +83,9 @@ int main(int argc, char **argv)
         // Read image from file
         im = cv::imread(string(argv[3])+"/"+vstrImageFilenames[ni],CV_LOAD_IMAGE_UNCHANGED);
         double tframe = vTimestamps[ni];
-#if PRINT_ORB ==1	
-	cout << "FILE: " << vstrImageFilenames[ni] << endl;
-#endif
+//#if PRINT_ORB ==1	
+	cerr << "FILE: " << vstrImageFilenames[ni] << endl;
+//#endif
         if(im.empty())
         {
             cerr << endl << "Failed to load image at: "
@@ -100,6 +100,7 @@ int main(int argc, char **argv)
 #endif
 #if READ_ORB == 1
 	vector<ORB_line> data = ReadORBFile(string(argv[3])+"/"+vstrOrbFilenames[ni]);
+
 //	cerr << "start frame: " << ni << endl;
 	SLAM.TrackMonocular(im,tframe,data);  
 //	cerr << "end frame: " << ni << endl;
@@ -154,9 +155,6 @@ vector<ORB_line> ReadORBFile(const string &file){
 	f.open(file.c_str());
 	vector<ORB_line> toReturn;
 	string s0;
-	getline(f,s0);
-        getline(f,s0);
-        getline(f,s0);
         while(!f.eof()){
 		string line;
 		getline(f,line);
