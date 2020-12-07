@@ -110,7 +110,6 @@ bool Initializer::Initialize(const Frame &CurrentFrame, const vector<int> &vMatc
 
     // Compute ratio of scores
     float RH = SH/(SH+SF);
-    cout << "RH: " << RH << endl;
     // Try to reconstruct from homography or fundamental depending on the ratio (0.40-0.45)
     if(RH>.42)//RH>0.40)
         return ReconstructH(vbMatchesInliersH,H,mK,R21,t21,vP3D,vbTriangulated,1.0,50);
@@ -719,7 +718,6 @@ bool Initializer::ReconstructH(vector<bool> &vbMatchesInliers, cv::Mat &H21, cv:
     }
 
 
-    cout << " minTriangle: " << minTriangulated <<  " Nfactor:  " << 0.9*N << " bg: " << bestGood << " 2bg " << secondBestGood << " minParallax " << minParallax << " bestP " << bestParallax << endl;
     if(secondBestGood<0.75*bestGood && bestParallax>=minParallax && bestGood>minTriangulated && bestGood>0.9*N)
     {
         vR[bestSolutionIdx].copyTo(R21);

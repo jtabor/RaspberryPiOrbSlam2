@@ -609,7 +609,6 @@ void Tracking::MonocularInitialization()
         // Set Reference Frame
         if(mCurrentFrame.mvKeys.size()>100)
         {
-	    cout << "reference frame set" << endl;
             mInitialFrame = Frame(mCurrentFrame);
             mLastFrame = Frame(mCurrentFrame);
             mvbPrevMatched.resize(mCurrentFrame.mvKeysUn.size());
@@ -628,11 +627,9 @@ void Tracking::MonocularInitialization()
     }
     else
     {
-	    cout << "in else" << endl;
         // Try to initialize
         if((int)mCurrentFrame.mvKeys.size()<=100)
         {
-		cout << "try to init" << endl;
             delete mpInitializer;
             mpInitializer = static_cast<Initializer*>(NULL);
             fill(mvIniMatches.begin(),mvIniMatches.end(),-1);
@@ -648,7 +645,6 @@ void Tracking::MonocularInitialization()
         // Check if there are enough correspondences
         if(nmatches<100)
         {
-	    cout << "not enough matches" << endl;
             delete mpInitializer;
             mpInitializer = static_cast<Initializer*>(NULL);
             return;
@@ -680,7 +676,6 @@ void Tracking::MonocularInitialization()
             mCurrentFrame.SetPose(Tcw);
 
             CreateInitialMapMonocular();
-	    cout << "created initial map" << endl;
         }
     }
 }

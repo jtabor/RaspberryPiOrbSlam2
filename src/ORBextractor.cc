@@ -1131,7 +1131,7 @@ void ORBextractor::operator()( InputArray _image, InputArray _mask, vector<KeyPo
     if(_image.empty())
         return;
 
-    cout << "start ORBextractor::operator()" << endl; 
+//    cout << "start ORBextractor::operator()" << endl; 
     Mat descriptors;
 
     int nkeypoints = recorded.size();
@@ -1210,44 +1210,9 @@ void ORBextractor::operator()( InputArray _image, InputArray _mask, vector<KeyPo
 	}	
 	i++;
 
-
-
-        // Compute the descriptors (used to be whole level at a time)
-		
-
-//#if PRINT_ORB == 1
-#if 0
-	char data[50] = "FFFFFFFFFFFFFFF"; 
-	for (size_t i = 0; i < keypoints.size(); i++)
-    	{
-		cout << "ORB Feature: " <<  level << " "  << keypoints[i].pt.x << " " << keypoints[i].pt.y << " ";
-		uchar* desc_ptr = desc.ptr(i);
-		for (int n =0; n < 32; ++n){
-			sprintf(data,"%x ",(uchar)desc_ptr[n]);
-			cout << data; 
-		}
-		cout << endl;
-	}
-
-    	//JOSH - print out the keypoints here.
-#endif
-
    }
 
    _keypoints.insert(_keypoints.end(),keypoints.begin() + starts[nlevels-1],keypoints.end());
-    char data[50] = "FFFFFFFFFFFFFFF"; 
-    for (int i = 0; i < _keypoints.size(); i++){
-	    KeyPoint k = _keypoints[i];
-	    cerr << "ORB Feature: " <<  _keypoints[i].octave << " "  << _keypoints[i].angle << " " <<  _keypoints[i].pt.x << " " << _keypoints[i].pt.y << " ";
-		desc = descriptors.rowRange(i, i+1);
-		uchar* desc_ptr = desc.ptr(0);
-		for (int n =0; n < 32; ++n){
-			sprintf(data,"%x ",(uchar)desc_ptr[n]);
-			cerr << data; 
-		}
-		cerr << endl;
-    }
-
 //    cerr << "End ORBextractor::operator" << endl;	
 }
 
