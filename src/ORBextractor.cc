@@ -1110,13 +1110,13 @@ void ORBextractor::operator()( InputArray _image, InputArray _mask, vector<KeyPo
 	char data[50] = "FFFFFFFFFFFFFFF"; 
 	for (size_t i = 0; i < keypoints.size(); i++)
     	{
-		cout << "ORB Feature: " <<  level << " "  << keypoints[i].angle << " " <<  keypoints[i].pt.x << " " << keypoints[i].pt.y << " ";
+		cerr << "ORB Feature: " <<  level << " "  << keypoints[i].angle << " " <<  keypoints[i].pt.x << " " << keypoints[i].pt.y << " ";
 		uchar* desc_ptr = desc.ptr(i);
 		for (int n =0; n < 32; ++n){
 			sprintf(data,"%x ",(uchar)desc_ptr[n]);
-			cout << data; 
+			cerr << data; 
 		}
-		cout << endl;
+		cerr << endl;
 	}
 
     	//JOSH - print out the keypoints here.
@@ -1157,7 +1157,7 @@ void ORBextractor::operator()( InputArray _image, InputArray _mask, vector<KeyPo
     for (int level = 1; level < nlevels; level++){
 	scales[level] = scales[level -1] * mvScaleFactor[level];
     }
-    for (int i = 0; i < recorded.size(); i++){
+    for (unsigned int i = 0; i < recorded.size(); i++){
 	ORB_line curLine = recorded[i];
 	int level = curLine.level;
 	KeyPoint curKey;
@@ -1177,7 +1177,7 @@ void ORBextractor::operator()( InputArray _image, InputArray _mask, vector<KeyPo
     }
     ends[nlevels-1] = recorded.size() -1;
     int offset = 0;
-    int i = 0;
+    unsigned int i = 0;
     int descIndex = 0;
     int curLevel = 0;
     int nkeypointsLevel = nKeysLevel[0];
@@ -1213,7 +1213,20 @@ void ORBextractor::operator()( InputArray _image, InputArray _mask, vector<KeyPo
    }
 
    _keypoints.insert(_keypoints.end(),keypoints.begin() + starts[nlevels-1],keypoints.end());
-//    cerr << "End ORBextractor::operator" << endl;	
+    /*char data[50] = "FFFFFFFFFFFFFFF"; 
+    for (unsigned int i = 0; i < _keypoints.size(); i++){
+	    KeyPoint k = _keypoints[i];
+	    cerr << "ORB Feature: " <<  _keypoints[i].octave << " "  << _keypoints[i].angle << " " <<  _keypoints[i].pt.x << " " << _keypoints[i].pt.y << " ";
+		desc = descriptors.rowRange(i, i+1);
+		uchar* desc_ptr = desc.ptr(0);
+		for (int n =0; n < 32; ++n){
+			sprintf(data,"%x ",(uchar)desc_ptr[n]);
+			cerr << data; 
+		}
+		cerr << endl;
+    }*/
+   
+   //    cerr << "End ORBextractor::operator" << endl;	
 }
 
 
