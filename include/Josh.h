@@ -21,8 +21,15 @@
 #ifndef JOSH_H
 #define JOSH_H
 
-#define READ_ORB 1
+#define READ_ORB 1 
 #define PRINT_ORB 0 
+
+struct ORB_line{
+	int level;
+	float x;
+	float y;
+	unsigned char descriptors[32];
+};
 
 
 #endif // MAP_H

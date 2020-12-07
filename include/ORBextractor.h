@@ -24,7 +24,7 @@
 #include <vector>
 #include <list>
 #include <opencv/cv.h>
-
+#include "Josh.h"
 
 namespace ORB_SLAM2
 {
@@ -59,6 +59,10 @@ public:
     void operator()( cv::InputArray image, cv::InputArray mask,
       std::vector<cv::KeyPoint>& keypoints,
       cv::OutputArray descriptors);
+
+    void operator()( cv::InputArray image, cv::InputArray mask,
+      std::vector<cv::KeyPoint>& keypoints,
+      cv::OutputArray descriptors,vector<ORB_line> recorded);
 
     int inline GetLevels(){
         return nlevels;}

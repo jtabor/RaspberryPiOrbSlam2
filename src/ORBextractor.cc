@@ -1125,6 +1125,109 @@ void ORBextractor::operator()( InputArray _image, InputArray _mask, vector<KeyPo
    }
 }
 
+void ORBextractor::operator()( InputArray _image, InputArray _mask, vector<KeyPoint>& _keypoints,
+                      OutputArray _descriptors, vector<ORB_line> recorded)
+{ 
+    if(_image.empty())
+        return;
+
+//    Mat image = _image.getMat();
+//    assert(image.type() == CV_8UC1 );
+
+    // Pre-compute the scale pyramid
+//    ComputePyramid(image);
+
+//    vector < vector<KeyPoint> > allKeypoints;
+//    ComputeKeyPointsOctTree(allKeypoints);
+
+
+    Mat descriptors;
+
+    int nkeypoints = recorded.size();
+    if( nkeypoints == 0 )
+        _descriptors.release();
+    else
+    {
+        _descriptors.create(nkeypoints, 32, CV_8U);
+        descriptors = _descriptors.getMat();
+    }
+
+    _keypoints.clear();
+    _keypoints.reserve(nkeypoints);
+
+    vector<KeyPoint>& keypoints;
+    float scales[nlevels] = {0};
+    int nKeysLevel[nlevels] = {0};
+    scales[0] = mvScaleFactor[0];
+    for (int level = 1; level < nlevels; level++){
+	scales[level] = scales[level -1] * mvScaleFactor[level];
+    }
+    for (int i = 0; i < recorded.size(); i++){
+	int level = curLine.level;
+	ORB_line curLine = recorded[i];
+	KeyPoint curKey;
+	curKey.octave = level;	
+	curKey.pt.x = curLine.x;
+	curKey.pt.y = curLine.y;
+	curKey.size = scales[level];
+	keypoints.push_back(curKey);
+	nKeysLevel[level]++;
+    }
+   
+
+    int offset = 0;
+    int i = 0;
+    int descIndex = 0;
+    int curLevel = 0;
+    int nkeypointsLevel = nKeysLevel[0];
+    while (i < keypoints.size())	
+    {
+	KeyPoint curKey = keypoints.get[i];
+	if (curLevel != curKey.level){
+		_keypoints.insert(_keypoints.end(), keypoints.begin() + i - nkeypointsLevel, keypoints.begin() + i-1);
+		descIndex = 0;
+		curLevel ++;
+		offset += nkeypointsLevel;
+		nkeypointsLevel = nKeysLevel[curLevel];
+        	Mat desc = descriptors.rowRange(offset, offset + nkeypointsLevel);
+	    	desc = Mat::zeros((int)nkeypointsLevel, 32, CV_8UC1);
+	}
+        if(nkeypointsLevel==0){
+            continue;
+	}
+
+	uchar* oneDesc = desc.ptr((int)descIndex);
+        descIndex++;
+	for (int n = 0; n < 32; n++){
+		oneDesc[n] = recorded[i].descriptors[n];
+	}	
+
+	
+
+        // Compute the descriptors (used to be whole level at a time)
+		
+
+#if PRINT_ORB == 1
+	char data[50] = "FFFFFFFFFFFFFFF"; 
+	for (size_t i = 0; i < keypoints.size(); i++)
+    	{
+		cout << "ORB Feature: " <<  level << " "  << keypoints[i].pt.x << " " << keypoints[i].pt.y << " ";
+		uchar* desc_ptr = desc.ptr(i);
+		for (int n =0; n < 32; ++n){
+			sprintf(data,"%x ",(uchar)desc_ptr[n]);
+			cout << data; 
+		}
+		cout << endl;
+	}
+
+    	//JOSH - print out the keypoints here.
+#endif
+
+   }
+}
+
+
+
 void ORBextractor::ComputePyramid(cv::Mat image)
 {
     for (int level = 0; level < nlevels; ++level)

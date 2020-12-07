@@ -39,26 +39,27 @@ void LoadImages(const string &strFile, vector<string> &vstrImageFilenames,
                 vector<double> &vTimestamps);
 void LoadImagesORB(const string &strAssociationFilename, vector<string> &vstrImageFilenamesRGB,
                 vector<string> &vstrOrbFilenames, vector<double> &vTimestamps);
-vector<int> ReadORBFile(const string &file);
+vector<ORB_line> ReadORBFile(const string &file);
 
 int main(int argc, char **argv)
 {
 
-    if(argc != 5)
+    if(argc != 4)
     {
-        cerr << endl << "Usage: ./mono_tum path_to_vocabulary path_to_settings path_to_sequence path_to_orb" << endl;
+        cerr << endl << "Usage: ./mono_tum path_to_vocabulary path_to_settings path_to_sequence" << endl;
         return 1;
     }
 
 // Retrieve paths to images
     vector<string> vstrImageFilenames;
     vector<double> vTimestamps;
-    string strFile = string(argv[3])+"/rgb.txt";
 
 #if READ_ORB == 1
+    string strFile = string(argv[3])+"/rgb_orb.txt";
     vector<string> vstrOrbFilenames;
-    LoadImagesORB(strFile, vstrImageFilenames, vstrOrbFilenames, vTimestamps); 
+    LoadImagesORB(strFile, vstrImageFilenames, vstrOrbFilenames, vTimestamps);
 #else    
+    string strFile = string(argv[3])+"/rgb.txt";
     LoadImages(strFile, vstrImageFilenames, vTimestamps);
 #endif
 
@@ -98,9 +99,8 @@ int main(int argc, char **argv)
         std::chrono::monotonic_clock::time_point t1 = std::chrono::monotonic_clock::now();
 #endif
 #if READ_ORB == 1
-    	vector<int> data = ReadORBFile(vstrOrbFilenames[ni]);
-	break;
-    	SLAM.TrackMonocular(im,tframe);  
+    	vector<ORB_line> data = ReadORBFile(string(argv[3])+"/"+vstrOrbFilenames[ni]);
+	SLAM.TrackMonocular(im,tframe,data);  
 #else
 	// Pass the image to the SLAM system
         SLAM.TrackMonocular(im,tframe);
@@ -147,27 +147,36 @@ int main(int argc, char **argv)
     return 0;
 }
 
-vector<int> ReadORBFile(const string &file){
+vector<ORB_line> ReadORBFile(const string &file){
 	ifstream f;
 	f.open(file.c_str());
-	vector<int> toReturn;
-	string s = " ";//delimeter
-	string line;
-	while(!f.eof()){
+	vector<ORB_line> toReturn;
+	string s0;
+	getline(f,s0);
+        getline(f,s0);
+        getline(f,s0);
+        while(!f.eof()){
+		string line;
 		getline(f,line);
-		char * cLine = line.c_str();
-		char * token = strtok(cLine,s.c_str());
-		while (token != NULL){
-			printf("%s\n",token);
-			token = strtok(NULL,s.c_str());
+		if (!line.empty()){
+			ORB_line oneLine;
+			stringstream ss;
+			ss << line;
+			ss >> oneLine.level;
+			ss >> oneLine.x;
+			ss >> oneLine.y;
+			for (int i = 0; i < 32; i++){
+				int temp;
+				ss >> hex >> temp;
+				oneLine.descriptors[i] = (unsigned char)temp;
+			}
+			toReturn.push_back(oneLine);
 		}
+		
 	}
 	return toReturn;
 }	
 		
-
-
-
 void LoadImages(const string &strFile, vector<string> &vstrImageFilenames, vector<double> &vTimestamps)
 {
     ifstream f;
@@ -202,11 +211,17 @@ void LoadImagesORB(const string &strAssociationFilename, vector<string> &vstrIma
 {
     ifstream fAssociation;
     fAssociation.open(strAssociationFilename.c_str());
+
+    string s;
+
+    getline(fAssociation,s);
+    getline(fAssociation,s);
+    getline(fAssociation,s);
+    
     while(!fAssociation.eof())
     {
-        string s;
-        getline(fAssociation,s);
-        if(!s.empty())
+    	getline(fAssociation,s);
+    	if(!s.empty())
         {
             stringstream ss;
             ss << s;
