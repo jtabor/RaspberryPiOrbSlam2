@@ -25,27 +25,42 @@
 #include<chrono>
 
 #include<opencv2/core/core.hpp>
-
+#include<unistd.h>
 #include<System.h>
+
+#include<stdio.h>
+#include<string.h>
+
+#include "Josh.h"
 
 using namespace std;
 
 void LoadImages(const string &strFile, vector<string> &vstrImageFilenames,
                 vector<double> &vTimestamps);
+void LoadImagesORB(const string &strAssociationFilename, vector<string> &vstrImageFilenamesRGB,
+                vector<string> &vstrOrbFilenames, vector<double> &vTimestamps);
+vector<int> ReadORBFile(const string &file);
 
 int main(int argc, char **argv)
 {
-    if(argc != 4)
+
+    if(argc != 5)
     {
-        cerr << endl << "Usage: ./mono_tum path_to_vocabulary path_to_settings path_to_sequence" << endl;
+        cerr << endl << "Usage: ./mono_tum path_to_vocabulary path_to_settings path_to_sequence path_to_orb" << endl;
         return 1;
     }
 
-    // Retrieve paths to images
+// Retrieve paths to images
     vector<string> vstrImageFilenames;
     vector<double> vTimestamps;
     string strFile = string(argv[3])+"/rgb.txt";
+
+#if READ_ORB == 1
+    vector<string> vstrOrbFilenames;
+    LoadImagesORB(strFile, vstrImageFilenames, vstrOrbFilenames, vTimestamps); 
+#else    
     LoadImages(strFile, vstrImageFilenames, vTimestamps);
+#endif
 
     int nImages = vstrImageFilenames.size();
 
@@ -67,7 +82,9 @@ int main(int argc, char **argv)
         // Read image from file
         im = cv::imread(string(argv[3])+"/"+vstrImageFilenames[ni],CV_LOAD_IMAGE_UNCHANGED);
         double tframe = vTimestamps[ni];
-
+#if PRINT_ORB ==1	
+	cout << "FILE: " << vstrImageFilenames[ni] << endl;
+#endif
         if(im.empty())
         {
             cerr << endl << "Failed to load image at: "
@@ -80,9 +97,14 @@ int main(int argc, char **argv)
 #else
         std::chrono::monotonic_clock::time_point t1 = std::chrono::monotonic_clock::now();
 #endif
-
-        // Pass the image to the SLAM system
+#if READ_ORB == 1
+    	vector<int> data = ReadORBFile(vstrOrbFilenames[ni]);
+	break;
+    	SLAM.TrackMonocular(im,tframe);  
+#else
+	// Pass the image to the SLAM system
         SLAM.TrackMonocular(im,tframe);
+#endif
 
 #ifdef COMPILEDWITHC11
         std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
@@ -125,6 +147,27 @@ int main(int argc, char **argv)
     return 0;
 }
 
+vector<int> ReadORBFile(const string &file){
+	ifstream f;
+	f.open(file.c_str());
+	vector<int> toReturn;
+	string s = " ";//delimeter
+	string line;
+	while(!f.eof()){
+		getline(f,line);
+		char * cLine = line.c_str();
+		char * token = strtok(cLine,s.c_str());
+		while (token != NULL){
+			printf("%s\n",token);
+			token = strtok(NULL,s.c_str());
+		}
+	}
+	return toReturn;
+}	
+		
+
+
+
 void LoadImages(const string &strFile, vector<string> &vstrImageFilenames, vector<double> &vTimestamps)
 {
     ifstream f;
@@ -150,6 +193,33 @@ void LoadImages(const string &strFile, vector<string> &vstrImageFilenames, vecto
             vTimestamps.push_back(t);
             ss >> sRGB;
             vstrImageFilenames.push_back(sRGB);
+        }
+    }
+}
+
+void LoadImagesORB(const string &strAssociationFilename, vector<string> &vstrImageFilenamesRGB,
+                vector<string> &vstrOrbFilenames, vector<double> &vTimestamps)
+{
+    ifstream fAssociation;
+    fAssociation.open(strAssociationFilename.c_str());
+    while(!fAssociation.eof())
+    {
+        string s;
+        getline(fAssociation,s);
+        if(!s.empty())
+        {
+            stringstream ss;
+            ss << s;
+            double t;
+            string sRGB, sD;
+            ss >> t;
+            vTimestamps.push_back(t);
+            ss >> sRGB;
+            vstrImageFilenamesRGB.push_back(sRGB);
+            ss >> t;
+            ss >> sD;
+            vstrOrbFilenames.push_back(sD);
+
         }
     }
 }

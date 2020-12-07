@@ -60,8 +60,10 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <vector>
 
+#include <iostream>
 #include "ORBextractor.h"
-
+#include "Josh.h"
+#include <stdio.h>
 
 using namespace cv;
 using namespace std;
@@ -848,8 +850,10 @@ void ORBextractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKeypoin
     }
 
     // compute orientations
-    for (int level = 0; level < nlevels; ++level)
+    for (int level = 0; level < nlevels; ++level){
         computeOrientation(mvImagePyramid[level], allKeypoints[level], umax);
+    }
+
 }
 
 void ORBextractor::ComputeKeyPointsOld(std::vector<std::vector<KeyPoint> > &allKeypoints)
@@ -1080,7 +1084,6 @@ void ORBextractor::operator()( InputArray _image, InputArray _mask, vector<KeyPo
 
         if(nkeypointsLevel==0)
             continue;
-
         // preprocess the resized image
         Mat workingMat = mvImagePyramid[level].clone();
         GaussianBlur(workingMat, workingMat, Size(7, 7), 2, 2, BORDER_REFLECT_101);
@@ -1090,6 +1093,7 @@ void ORBextractor::operator()( InputArray _image, InputArray _mask, vector<KeyPo
         computeDescriptors(workingMat, keypoints, desc, pattern);
 
         offset += nkeypointsLevel;
+
 
         // Scale keypoint coordinates
         if (level != 0)
@@ -1101,7 +1105,24 @@ void ORBextractor::operator()( InputArray _image, InputArray _mask, vector<KeyPo
         }
         // And add the keypoints to the output
         _keypoints.insert(_keypoints.end(), keypoints.begin(), keypoints.end());
-    }
+
+#if PRINT_ORB == 1
+	char data[50] = "FFFFFFFFFFFFFFF"; 
+	for (size_t i = 0; i < keypoints.size(); i++)
+    	{
+		cout << "ORB Feature: " <<  level << " "  << keypoints[i].pt.x << " " << keypoints[i].pt.y << " ";
+		uchar* desc_ptr = desc.ptr(i);
+		for (int n =0; n < 32; ++n){
+			sprintf(data,"%x ",(uchar)desc_ptr[n]);
+			cout << data; 
+		}
+		cout << endl;
+	}
+
+    	//JOSH - print out the keypoints here.
+#endif
+
+   }
 }
 
 void ORBextractor::ComputePyramid(cv::Mat image)
