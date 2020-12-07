@@ -1081,10 +1081,11 @@ void ORBextractor::operator()( InputArray _image, InputArray _mask, vector<KeyPo
     {
         vector<KeyPoint>& keypoints = allKeypoints[level];
         int nkeypointsLevel = (int)keypoints.size();
-
+	
         if(nkeypointsLevel==0)
             continue;
-        // preprocess the resized image
+        cout << "level: " << level << " size: " << keypoints[0].size << endl;
+	// preprocess the resized image
         Mat workingMat = mvImagePyramid[level].clone();
         GaussianBlur(workingMat, workingMat, Size(7, 7), 2, 2, BORDER_REFLECT_101);
 
@@ -1105,12 +1106,12 @@ void ORBextractor::operator()( InputArray _image, InputArray _mask, vector<KeyPo
         }
         // And add the keypoints to the output
         _keypoints.insert(_keypoints.end(), keypoints.begin(), keypoints.end());
-
+	
 #if PRINT_ORB == 1
 	char data[50] = "FFFFFFFFFFFFFFF"; 
 	for (size_t i = 0; i < keypoints.size(); i++)
     	{
-		cout << "ORB Feature: " <<  level << " "  << keypoints[i].pt.x << " " << keypoints[i].pt.y << " ";
+		cout << "ORB Feature: " <<  level << " "  << keypoints[i].angle << " " <<  keypoints[i].pt.x << " " << keypoints[i].pt.y << " ";
 		uchar* desc_ptr = desc.ptr(i);
 		for (int n =0; n < 32; ++n){
 			sprintf(data,"%x ",(uchar)desc_ptr[n]);
@@ -1127,20 +1128,11 @@ void ORBextractor::operator()( InputArray _image, InputArray _mask, vector<KeyPo
 
 void ORBextractor::operator()( InputArray _image, InputArray _mask, vector<KeyPoint>& _keypoints,
                       OutputArray _descriptors, vector<ORB_line> recorded)
-{ 
+{
     if(_image.empty())
         return;
 
-//    Mat image = _image.getMat();
-//    assert(image.type() == CV_8UC1 );
-
-    // Pre-compute the scale pyramid
-//    ComputePyramid(image);
-
-//    vector < vector<KeyPoint> > allKeypoints;
-//    ComputeKeyPointsOctTree(allKeypoints);
-
-
+      
     Mat descriptors;
 
     int nkeypoints = recorded.size();
@@ -1155,59 +1147,79 @@ void ORBextractor::operator()( InputArray _image, InputArray _mask, vector<KeyPo
     _keypoints.clear();
     _keypoints.reserve(nkeypoints);
 
-    vector<KeyPoint>& keypoints;
+    vector<KeyPoint> keypoints;
     float scales[nlevels] = {0};
     int nKeysLevel[nlevels] = {0};
     scales[0] = mvScaleFactor[0];
+    int starts[nlevels] = {0};
+    int ends[nlevels] = {0};
+    int prevLevel = 0;
+    
+    cout << "level: " << 0 << " size: " << PATCH_SIZE*mvScaleFactor[0] << endl;
     for (int level = 1; level < nlevels; level++){
 	scales[level] = scales[level -1] * mvScaleFactor[level];
+	cout << "level: " << level << " size: " << PATCH_SIZE*mvScaleFactor[level] << endl;
     }
     for (int i = 0; i < recorded.size(); i++){
-	int level = curLine.level;
 	ORB_line curLine = recorded[i];
+	int level = curLine.level;
 	KeyPoint curKey;
 	curKey.octave = level;	
+	curKey.angle = curLine.angle;
 	curKey.pt.x = curLine.x;
 	curKey.pt.y = curLine.y;
-	curKey.size = scales[level];
+//	curKey.size = scales[level];
+	curKey.size = (const int)PATCH_SIZE*mvScaleFactor[level];
 	keypoints.push_back(curKey);
 	nKeysLevel[level]++;
+	if (prevLevel != level){
+		ends[level] = i-1;
+		prevLevel = level;
+		starts[level+1] = i;
+	}
     }
-   
-
+    ends[nlevels-1] = recorded.size() -1;
     int offset = 0;
     int i = 0;
     int descIndex = 0;
     int curLevel = 0;
     int nkeypointsLevel = nKeysLevel[0];
+    Mat desc = descriptors.rowRange(0,nkeypointsLevel);
+    desc = Mat::zeros((int)nkeypointsLevel,32,CV_8UC1);
+
+
     while (i < keypoints.size())	
     {
-	KeyPoint curKey = keypoints.get[i];
-	if (curLevel != curKey.level){
-		_keypoints.insert(_keypoints.end(), keypoints.begin() + i - nkeypointsLevel, keypoints.begin() + i-1);
+	KeyPoint curKey = keypoints[i];
+	if (curLevel != curKey.octave){
+//		cout << "curLevel: " << curLevel << " start: " << starts[curLevel] << " end: " << ends[curLevel] << endl;
+		_keypoints.insert(_keypoints.end(), keypoints.begin() + starts[curLevel], keypoints.begin() + ends[curLevel]);
 		descIndex = 0;
 		curLevel ++;
 		offset += nkeypointsLevel;
 		nkeypointsLevel = nKeysLevel[curLevel];
-        	Mat desc = descriptors.rowRange(offset, offset + nkeypointsLevel);
-	    	desc = Mat::zeros((int)nkeypointsLevel, 32, CV_8UC1);
+		desc = descriptors.rowRange(offset, offset + nkeypointsLevel);
+		desc = Mat::zeros((int)nkeypointsLevel, 32, CV_8UC1);
 	}
         if(nkeypointsLevel==0){
             continue;
 	}
+
 
 	uchar* oneDesc = desc.ptr((int)descIndex);
         descIndex++;
 	for (int n = 0; n < 32; n++){
 		oneDesc[n] = recorded[i].descriptors[n];
 	}	
+	i++;
 
-	
+
 
         // Compute the descriptors (used to be whole level at a time)
 		
 
-#if PRINT_ORB == 1
+//#if PRINT_ORB == 1
+#if 0
 	char data[50] = "FFFFFFFFFFFFFFF"; 
 	for (size_t i = 0; i < keypoints.size(); i++)
     	{
@@ -1224,6 +1236,10 @@ void ORBextractor::operator()( InputArray _image, InputArray _mask, vector<KeyPo
 #endif
 
    }
+
+   _keypoints.insert(_keypoints.end(),keypoints.begin() + starts[nlevels-1],keypoints.end());
+
+//    cerr << "End ORBextractor::operator" << endl;	
 }
 
 

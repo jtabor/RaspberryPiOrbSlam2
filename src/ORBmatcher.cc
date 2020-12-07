@@ -283,7 +283,7 @@ int ORBmatcher::SearchByBoW(KeyFrame* pKF,Frame &F, vector<MapPoint*> &vpMapPoin
             }
         }
     }
-
+cout << "matches: " << nmatches << endl;
     return nmatches;
 }
 
@@ -419,20 +419,21 @@ int ORBmatcher::SearchForInitialization(Frame &F1, Frame &F2, vector<cv::Point2f
     {
         cv::KeyPoint kp1 = F1.mvKeysUn[i1];
         int level1 = kp1.octave;
-        if(level1>0)
+        if(level1>0){
+//            cerr << "SeachForInit level too high: " << kp1.octave << " mvKeysUn size; " << F1.mvKeysUn.size() <<  endl;
+	    continue;
+	}
+	vector<size_t> vIndices2 = F2.GetFeaturesInArea(vbPrevMatched[i1].x,vbPrevMatched[i1].y, windowSize,level1,level1);
+
+        if(vIndices2.empty()){
+            cerr << "SeachForInit level empty" << endl;
             continue;
-
-        vector<size_t> vIndices2 = F2.GetFeaturesInArea(vbPrevMatched[i1].x,vbPrevMatched[i1].y, windowSize,level1,level1);
-
-        if(vIndices2.empty())
-            continue;
-
+	}
         cv::Mat d1 = F1.mDescriptors.row(i1);
 
         int bestDist = INT_MAX;
         int bestDist2 = INT_MAX;
         int bestIdx2 = -1;
-
         for(vector<size_t>::iterator vit=vIndices2.begin(); vit!=vIndices2.end(); vit++)
         {
             size_t i2 = *vit;
@@ -440,7 +441,7 @@ int ORBmatcher::SearchForInitialization(Frame &F1, Frame &F2, vector<cv::Point2f
             cv::Mat d2 = F2.mDescriptors.row(i2);
 
             int dist = DescriptorDistance(d1,d2);
-
+//	    cerr << "Dist: " << dist << endl;
             if(vMatchedDistance[i2]<=dist)
                 continue;
 
@@ -515,7 +516,7 @@ int ORBmatcher::SearchForInitialization(Frame &F1, Frame &F2, vector<cv::Point2f
     for(size_t i1=0, iend1=vnMatches12.size(); i1<iend1; i1++)
         if(vnMatches12[i1]>=0)
             vbPrevMatched[i1]=F2.mvKeysUn[vnMatches12[i1]].pt;
-
+	cout << "init match: " << nmatches << endl;
     return nmatches;
 }
 

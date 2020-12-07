@@ -62,7 +62,7 @@ public:
 
     void operator()( cv::InputArray image, cv::InputArray mask,
       std::vector<cv::KeyPoint>& keypoints,
-      cv::OutputArray descriptors,vector<ORB_line> recorded);
+      cv::OutputArray descriptors,std::vector<ORB_line> recorded);
 
     int inline GetLevels(){
         return nlevels;}

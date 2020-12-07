@@ -35,7 +35,7 @@
 #include "KeyFrameDatabase.h"
 #include "ORBVocabulary.h"
 #include "Viewer.h"
-
+#include "Josh.h"
 namespace ORB_SLAM2
 {
 
@@ -77,6 +77,7 @@ public:
     // Returns the camera pose (empty if tracking fails).
     cv::Mat TrackMonocular(const cv::Mat &im, const double &timestamp);
 
+    cv::Mat TrackMonocular(const cv::Mat &im, const double &timestamp, std::vector<ORB_line> recorded);
     // This stops local mapping thread (map building) and performs only camera tracking.
     void ActivateLocalizationMode();
     // This resumes local mapping thread and performs SLAM again.

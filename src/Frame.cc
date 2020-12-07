@@ -245,12 +245,13 @@ Frame::Frame(const cv::Mat &imGray, const double &timeStamp, ORBextractor* extra
 
     // ORB extraction
     //ExtractORB(0,imGray);
-    ExtractORB(0,imGray,recorded);
+    ExtractORBRecord(0,imGray,recorded);
     N = mvKeys.size();
-
-    if(mvKeys.empty())
-        return;
-
+    
+    if(mvKeys.empty()){
+    	cout << "KEYS EMPTY!" << endl;
+	return;
+    }
     UndistortKeyPoints();
 
     // Set no stereo information
@@ -309,13 +310,17 @@ void Frame::ExtractORB(int flag, const cv::Mat &im)
 }
 
 //JOSH - add this to propogate file names.
-void Frame::ExtractORB(int flag, const cv::Mat &im, vector<ORB_line> recorded)
+void Frame::ExtractORBRecord(int flag, const cv::Mat &im, vector<ORB_line> recorded)
 {
   
-    if(flag==0)
+    if(flag==0){
         (*mpORBextractorLeft)(im,cv::Mat(),mvKeys,mDescriptors,recorded);
-    else
+//    	cout << "first: " << mvKeys[0].octave << " " << mvKeys[0].pt.x << " " << mvKeys[0].pt.y << endl;
+//    	cout << "last: " << mvKeys[mvKeys.size()-1].octave << " " << mvKeys[mvKeys.size()-1].pt.x << " " << mvKeys[mvKeys.size()-1].pt.y << endl;
+    }
+    else{
         (*mpORBextractorRight)(im,cv::Mat(),mvKeysRight,mDescriptorsRight,recorded);
+    } 
 }
 
 void Frame::SetPose(cv::Mat Tcw)
@@ -697,7 +702,6 @@ void Frame::ComputeStereoMatches()
     {
         if(vDistIdx[i].first<thDist)
             break;
-        else
         {
             mvuRight[vDistIdx[i].second]=-1;
             mvDepth[vDistIdx[i].second]=-1;

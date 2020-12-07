@@ -55,7 +55,7 @@ int main(int argc, char **argv)
     vector<double> vTimestamps;
 
 #if READ_ORB == 1
-    string strFile = string(argv[3])+"/rgb_orb.txt";
+    string strFile = string(argv[3])+"/rgb_orb_angle.txt";
     vector<string> vstrOrbFilenames;
     LoadImagesORB(strFile, vstrImageFilenames, vstrOrbFilenames, vTimestamps);
 #else    
@@ -99,8 +99,10 @@ int main(int argc, char **argv)
         std::chrono::monotonic_clock::time_point t1 = std::chrono::monotonic_clock::now();
 #endif
 #if READ_ORB == 1
-    	vector<ORB_line> data = ReadORBFile(string(argv[3])+"/"+vstrOrbFilenames[ni]);
+	vector<ORB_line> data = ReadORBFile(string(argv[3])+"/"+vstrOrbFilenames[ni]);
+//	cerr << "start frame: " << ni << endl;
 	SLAM.TrackMonocular(im,tframe,data);  
+//	cerr << "end frame: " << ni << endl;
 #else
 	// Pass the image to the SLAM system
         SLAM.TrackMonocular(im,tframe);
@@ -163,6 +165,7 @@ vector<ORB_line> ReadORBFile(const string &file){
 			stringstream ss;
 			ss << line;
 			ss >> oneLine.level;
+			ss >> oneLine.angle;
 			ss >> oneLine.x;
 			ss >> oneLine.y;
 			for (int i = 0; i < 32; i++){
