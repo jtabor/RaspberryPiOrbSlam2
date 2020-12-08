@@ -78,6 +78,10 @@ public:
     // Computes rotation, translation and camera center matrices from the camera pose.
     void UpdatePoseMatrices();
 
+    //prints the current position of the frame.
+    cv::Mat GetPosition();
+
+
     // Returns the camera center.
     inline cv::Mat GetCameraCenter(){
         return mOw.clone();

@@ -21,8 +21,9 @@
 #ifndef JOSH_H
 #define JOSH_H
 
-#define READ_ORB 1 
+#define READ_ORB 0 
 #define PRINT_ORB 0 
+#define PRINT_TRACK 0 
 
 struct ORB_line{
 	int level;

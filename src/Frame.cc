@@ -328,7 +328,9 @@ void Frame::SetPose(cv::Mat Tcw)
     mTcw = Tcw.clone();
     UpdatePoseMatrices();
 }
-
+cv::Mat Frame::GetPosition(){
+    return mOw.clone();
+}
 void Frame::UpdatePoseMatrices()
 { 
     mRcw = mTcw.rowRange(0,3).colRange(0,3);

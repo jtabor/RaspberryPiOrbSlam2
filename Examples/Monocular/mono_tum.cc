@@ -134,9 +134,9 @@ int main(int argc, char **argv)
             usleep((T-ttrack)*1e6);
     }
 
+    //cv::waitKey(0);
     // Stop all threads
     SLAM.Shutdown();
-
     // Tracking time statistics
     sort(vTimesTrack.begin(),vTimesTrack.end());
     float totaltime = 0;

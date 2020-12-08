@@ -461,7 +461,16 @@ void Tracking::Track()
 
         // Update drawer
         mpFrameDrawer->Update(this);
-
+#if PRINT_TRACK ==1
+	    if (mState == OK && bOK){
+		mCurrentFrame.UpdatePoseMatrices();
+        	cv::Mat t = mCurrentFrame.GetPosition();
+		double ts = mCurrentFrame.mTimeStamp;
+		char data[50] = "FFFFFFFFFFFFFFFF";
+		sprintf(data,"%10f6",(float) ts);
+		cout << "POSITION: " << data << "," << t.at<float>(0) << "," << t.at<float>(1) << "," << t.at<float>(2) << endl; 
+	    }
+#endif 
         // If tracking were good, check if we insert a keyframe
         if(bOK)
         {
