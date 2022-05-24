@@ -1,3 +1,6 @@
+This is a fork of ORB-SLAM2 (readme for that below).  This was to test offloading of the ORB feature extraction step to an FPGA and running the rest on a Raspberry Pi 4.  Even with the features extraction moved, The raspberry pi got something like 5 FPS (or so)
+
+
 # ORB-SLAM2
 **Authors:** [Raul Mur-Artal](http://webdiis.unizar.es/~raulmur/), [Juan D. Tardos](http://webdiis.unizar.es/~jdtardos/), [J. M. M. Montiel](http://webdiis.unizar.es/~josemari/) and [Dorian Galvez-Lopez](http://doriangalvez.com/) ([DBoW2](https://github.com/dorian3d/DBoW2))
 
